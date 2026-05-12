@@ -19,12 +19,10 @@
       <h1 class="text-4xl font-bold flex items-center gap-3">
         <i class="fa-solid fa-lock"></i> Admin Panel
       </h1>
-      <a href="index.html" class="text-orange-500 hover:underline flex items-center gap-2">
-        ← Back to Rides
-      </a>
+      <a href="index.html" class="text-orange-500 hover:underline">← Back to Rides</a>
     </div>
 
-    <!-- Add New Ride -->
+    <!-- Add Ride Form -->
     <form id="ride-form" onsubmit="addRide(event)" class="bg-zinc-900 p-8 rounded-3xl border border-zinc-700 mb-12">
       <div class="grid grid-cols-2 gap-6">
         <div class="col-span-2">
@@ -54,19 +52,21 @@
       </div>
 
       <div class="mt-8 flex gap-4">
-        <button type="button" onclick="window.location.href='index.html'" 
-                class="flex-1 py-4 border border-zinc-700 rounded-2xl">Cancel</button>
-        <button type="submit" class="flex-1 py-4 bg-orange-600 hover:bg-orange-700 rounded-2xl font-semibold">
-          Publish Ride
-        </button>
+        <button type="button" onclick="window.location.href='index.html'" class="flex-1 py-4 border border-zinc-700 rounded-2xl">Cancel</button>
+        <button type="submit" class="flex-1 py-4 bg-orange-600 hover:bg-orange-700 rounded-2xl font-semibold">Publish Ride</button>
       </div>
     </form>
 
-    <!-- Remove Rides Section -->
+    <!-- Manage Rides -->
     <div class="bg-zinc-900 p-8 rounded-3xl border border-zinc-700">
-      <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
-        <i class="fa-solid fa-trash-can"></i> Manage Rides
-      </h3>
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-semibold">Manage Rides</h3>
+        <button onclick="connectScriptFile()" 
+                id="connect-btn"
+                class="bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-xl text-sm font-medium">
+          Connect script.js
+        </button>
+      </div>
       <div id="admin-rides-list" class="space-y-4"></div>
     </div>
   </div>
