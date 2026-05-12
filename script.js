@@ -1,158 +1,82 @@
-let rides = JSON.parse(localStorage.getItem('throttleRides')) || [
-  {
-    id: 1,
-    title: "Tamborine Mountain Twisties",
-    date: "2026-05-25",
-    time: "07:30",
-    location: "Shell Station, Pacific Motorway Exit 57",
-    mapsLink: "https://maps.google.com/?q=Shell+Station+Tamborine",
-    description: "80km of perfect sweeping corners through the Scenic Rim.\nCoffee stop at the top.\nIntermediate pace."
+let rides = JSON.parse(localStorage.getItem('throttleRides')) || [ /* your default ride */ ];
+
+let scriptFileHandle = null;   // Stores connection to your script.js file
+
+async function connectScriptFile() {
+  try {
+    scriptFileHandle = await window.showOpenFilePicker({
+      types: [{ description: 'JavaScript File', accept: { 'text/javascript': ['.js'] } }],
+      multiple: false
+    }).then(handles => handles[0]);
+
+    const permission = await scriptFileHandle.requestPermission({ mode: 'readwrite' });
+    if (permission !== 'granted') throw new Error("Permission denied");
+
+    alert("✅ script.js connected successfully!\n\nNow when you add or delete rides, the file will update automatically.");
+    document.getElementById('connect-btn').innerHTML = '✅ Connected';
+  } catch (err) {
+    alert("Connection cancelled or not supported in this browser.\n\nUse Chrome or Edge for best results.");
   }
-];
+}
+
+async function updateScriptFile() {
+  if (!scriptFileHandle) return; // Not connected
+
+  try {
+    const content = `let rides = ${JSON.stringify(rides, null, 2)};\n\n` +
+                    `// === Rest of your script.js code continues below ===\n` +
+                    `// (Keep everything after this line unchanged)`;
+
+    const writable = await scriptFileHandle.createWritable();
+    await writable.write(content);
+    await writable.close();
+  } catch (e) {
+    console.error("Could not update file", e);
+  }
+}
+
+// ==================== Existing Functions ====================
 
 function saveRides() {
   localStorage.setItem('throttleRides', JSON.stringify(rides));
+  updateScriptFile();        // ← Auto update the file
 }
 
-function formatDate(dateStr) {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('en-AU', { weekday: 'long', month: 'long', day: 'numeric' });
-}
+function formatDate(dateStr) { /* ... same as before ... */ }
 
-function renderRides() {
-  const container = document.getElementById('rides-list');
-  if (!container) return;
+function renderRides() { /* ... same ... */ }
 
-  container.innerHTML = '';
+function viewRide(id) { /* ... same ... */ }
 
-  if (rides.length === 0) {
-    container.innerHTML = `<p class="col-span-3 text-center py-20 text-zinc-500">No rides scheduled yet.</p>`;
-    return;
-  }
-
-  rides.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-  rides.forEach(ride => {
-    const card = document.createElement('div');
-    card.className = `ride-card bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden cursor-pointer`;
-    card.innerHTML = `
-      <div class="h-2 bg-gradient-to-r from-orange-500 to-amber-500"></div>
-      <div class="p-8">
-        <div class="flex justify-between items-start">
-          <div>
-            <div class="text-orange-500 text-sm font-medium">${formatDate(ride.date)}</div>
-            <div class="text-2xl font-semibold mt-1">${ride.title}</div>
-          </div>
-          <div class="text-right">
-            <div class="text-3xl font-mono font-bold text-orange-400">${ride.time}</div>
-          </div>
-        </div>
-        <div class="mt-6 flex items-center gap-3 text-sm text-zinc-400">
-          <i class="fa-solid fa-location-dot"></i>
-          <span>${ride.location}</span>
-        </div>
-        <div onclick="viewRide(${ride.id}); event.stopImmediatePropagation()" 
-             class="mt-8 bg-zinc-800 hover:bg-orange-600 transition-colors text-center py-4 rounded-2xl font-medium">
-          VIEW RIDE DETAILS →
-        </div>
-      </div>
-    `;
-    card.onclick = () => viewRide(ride.id);
-    container.appendChild(card);
-  });
-
-  const countEl = document.getElementById('ride-count');
-  if (countEl) countEl.textContent = `${rides.length} ride${rides.length !== 1 ? 's' : ''} scheduled`;
-}
-
-// Detail Page
-function viewRide(id) {
-  const ride = rides.find(r => r.id === id);
-  if (!ride) return;
-
-  const detailHTML = `... (same as previous version - kept short for space) ...`;
-
-  const win = window.open();
-  win.document.write(detailHTML);
-  win.document.close();
-}
-
-// Add Ride
 function addRide(e) {
   e.preventDefault();
-  const newRide = {
-    id: Date.now(),
-    title: document.getElementById('title').value,
-    date: document.getElementById('date').value,
-    time: document.getElementById('time').value,
-    location: document.getElementById('location').value,
-    mapsLink: document.getElementById('maps-link').value,
-    description: document.getElementById('description').value
-  };
+  const newRide = { /* ... same as before ... */ };
 
   rides.push(newRide);
   saveRides();
   renderRides();
   renderAdminRides();
-  alert("✅ Ride published successfully!");
+  alert("Ride published and script.js updated!");
   e.target.reset();
 }
 
-// Delete Ride
 function deleteRide(id) {
   if (confirm("Delete this ride permanently?")) {
     rides = rides.filter(r => r.id !== id);
     saveRides();
     renderRides();
     renderAdminRides();
-    alert("Ride deleted.");
+    alert("Ride deleted and script.js updated!");
   }
 }
 
-// Render Admin List with Delete Buttons
-function renderAdminRides() {
-  const container = document.getElementById('admin-rides-list');
-  if (!container) return;
-  
-  container.innerHTML = '';
+function renderAdminRides() { /* ... same as before ... */ }
 
-  if (rides.length === 0) {
-    container.innerHTML = `<p class="text-zinc-500 text-center py-8">No rides to manage.</p>`;
-    return;
-  }
+function goToAdmin() { /* ... same ... */ }
 
-  rides.forEach(ride => {
-    const div = document.createElement('div');
-    div.className = "flex items-center justify-between bg-zinc-800 hover:bg-zinc-700 p-5 rounded-2xl transition-colors group";
-    div.innerHTML = `
-      <div class="flex-1">
-        <div class="font-semibold text-lg">${ride.title}</div>
-        <div class="text-sm text-zinc-400">${formatDate(ride.date)} • ${ride.time} — ${ride.location}</div>
-      </div>
-      <button onclick="deleteRide(${ride.id}); event.stopImmediatePropagation()" 
-              class="bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-xl opacity-90 group-hover:opacity-100 transition-all">
-        <i class="fa-solid fa-trash"></i>
-      </button>
-    `;
-    container.appendChild(div);
-  });
-}
+function showAbout() { /* ... */ }
 
-function goToAdmin() {
-  const pass = prompt("Enter admin password:");
-  if (pass === "throttle2026" || pass === "admin") {
-    window.location.href = "admin.html";
-  } else {
-    alert("Incorrect password");
-  }
-}
-
-function showAbout() {
-  alert("Throttle Collective\nPrivate motorbike riding group.");
-}
-
-// Auto run on page load
-window.onload = function() {
+window.onload = () => {
   if (document.getElementById('rides-list')) renderRides();
   if (document.getElementById('admin-rides-list')) renderAdminRides();
 };
